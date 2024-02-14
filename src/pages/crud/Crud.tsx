@@ -1,4 +1,4 @@
-import { Box, Button, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, } from "@mui/material"
+import { Box, Button, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, } from "@mui/material"
 import crudStyles from "./Crud.Styles"
 import React, { useState } from "react";
 import BasicModal from "../../components/modal_popup/ModalPopup";
@@ -32,17 +32,18 @@ interface IState {
 }
 
 const apiStatusConstants = {
-    initial : "INITIAL",
+    initial: "INITIAL",
     pending: "PENDING",
-    success : "SUCCESS",
+    success: "SUCCESS",
     failure: "FAILURE"
 }
 
 const Crud = () => {
-    const [apiStatus, setApiStatus] = useState<string>(apiStatusConstants.initial)
+    const reduxState = useSelector((state: RootState) => state.crud);
+    const [apiStatus, setApiStatus] = useState<string>(reduxState.usersApiStatus)
     const dispatch = useDispatch<AppDispatch>();
     const [isModalOpened, setIsModalOpened] = useState<IState["isModalOpened"]>(false)
-    const reduxState = useSelector((state: RootState) => state.crud);
+
     // console.log(allUsers)
 
     const addUserEventHandler = () => {
@@ -58,9 +59,58 @@ const Crud = () => {
     }
 
 
-    const fetchUsers = () => {
-
+    const loadingView = () => {
+        return (
+            <Typography>...Loading</Typography>
+        )
     }
+
+    const successView = () => {
+        // console.log("success view called")
+        return (
+            <>
+                {reduxState.users && (reduxState.users.map((eachUser) => (
+                    <TableRow
+                        key={eachUser.id}
+                    >
+                        <TableCell sx={crudStyles.columnId}>
+                            {eachUser.id}
+                        </TableCell>
+
+                        <TableCell sx={crudStyles.columnNumber} align="center">{eachUser.mobile}</TableCell>
+                        <TableCell sx={crudStyles.columnEmail} align="center">{eachUser.email}</TableCell>
+                        <TableCell sx={crudStyles.columnAddress} align="center">{eachUser.address}</TableCell>
+                    </TableRow>
+                )))}
+            </>
+        )
+    }
+
+
+    const failureView = () => {
+        // console.log("failure view called")
+        return (
+
+            <Typography>API CALL FAILED</Typography>
+
+        )
+    }
+
+
+    const fetchUsers = () => {
+        // console.log(apiStatus);
+        switch (true) {
+            case reduxState.usersApiStatus === "LOADING":
+                console.log("loading called")
+                return loadingView();
+            case reduxState.usersApiStatus === "SUCCESS":
+                return successView();
+            case reduxState.usersApiStatus === "FAILURE":
+                return failureView();
+            default:
+                return "";
+        }
+    };
 
     return (
         <>
@@ -90,19 +140,6 @@ const Crud = () => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {allUsers.map((eachUser) => (
-                                            <TableRow
-                                                key={eachUser.id}
-                                            >
-                                                <TableCell sx={crudStyles.columnId}>
-                                                    {eachUser.id}
-                                                </TableCell>
-
-                                                <TableCell sx={crudStyles.columnNumber} align="center">{eachUser.mobile}</TableCell>
-                                                <TableCell sx={crudStyles.columnEmail} align="center">{eachUser.email}</TableCell>
-                                                <TableCell sx={crudStyles.columnAddress} align="center">{eachUser.address}</TableCell>
-                                            </TableRow>
-                                        ))}
                                         {fetchUsers()}
                                     </TableBody>
                                 </Table>

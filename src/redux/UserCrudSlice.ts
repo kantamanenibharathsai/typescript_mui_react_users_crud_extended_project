@@ -34,18 +34,22 @@ const initialState: Istate = {
 };
 
 export const getUsers = createAsyncThunk("get-users", async () => {
-  try {
-    const apiUrl = "http://43.205.130.115:8081/user";
-    const response = await fetch(apiUrl);
-    if (!response.ok) {
-      throw new Error("Failed to fetch users");
-    }
-    const data = await response.json();
-    return data;
-  }
-  catch(error) {
-    console.log(error)
-  }
+  // try {
+  //   const apiUrl = "http://43.205.130.115:8081/user";
+  //   const response = await fetch(apiUrl);
+  //   if (!response.ok) {
+  //     throw new Error("Failed to fetch users");
+  //   }
+  //   const data = await response.json();
+  //   return data;
+  // }
+  // catch(error) {
+  //   console.log(error)
+  // }
+  return fetch("http://43.205.130.115:8081/user")
+    .then((res) => res.json())
+    .then((jsonData) => jsonData)
+    .catch((error) => console.log(error));
 });
 
 export const getSingleUser = createAsyncThunk(
@@ -89,9 +93,11 @@ const usersSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addCase(getUsers.pending, (state) => {
+      console.log("Loading");
       state.usersApiStatus = "LOADING";
     });
     builder.addCase(getUsers.fulfilled, (state, action) => {
+      console.log("success");
       state.usersApiStatus = "SUCCESS";
       console.log("users", "fulfilled");
       console.log(action.payload);
@@ -99,6 +105,7 @@ const usersSlice = createSlice({
       state.users = action.payload;
     });
     builder.addCase(getUsers.rejected, (state, action) => {
+      console.log("failure");
       state.usersApiStatus = "FAILURE";
       console.log(action.error.message);
     });
